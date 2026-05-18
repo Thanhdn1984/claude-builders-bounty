@@ -8,6 +8,32 @@ You're in the right place.
 
 ---
 
+## Changelog generator bounty submission
+
+This repository includes a portable changelog generator:
+
+```bash
+bash changelog.sh
+```
+
+Setup in 3 steps:
+
+1. Copy `changelog.sh` into any git repository.
+2. Run `bash changelog.sh` from the repo root.
+3. Review and commit the generated `CHANGELOG.md`.
+
+Optional:
+
+```bash
+bash changelog.sh --since v1.0.0 --output CHANGELOG.md
+```
+
+The script reads commits since the latest tag, or all history when no tag exists, then groups non-merge commit subjects into `Added`, `Fixed`, `Changed`, and `Removed`.
+
+See `changelog-skill/SKILL.md` for the Claude Code skill wrapper.
+
+---
+
 ## How it works
 
 **To post a bounty**
