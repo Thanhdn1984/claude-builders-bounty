@@ -14,30 +14,31 @@ fi
 COMMITS=$(git log --no-merges --pretty=format:'%s' "$RANGE" 2>/dev/null || true)
 TODAY=$(date +%Y-%m-%d)
 
-declare -a ADDED FIXED CHANGED REMOVED
+ADDED_FILE=$(mktemp)
+FIXED_FILE=$(mktemp)
+CHANGED_FILE=$(mktemp)
+REMOVED_FILE=$(mktemp)
+trap 'rm -f "$ADDED_FILE" "$FIXED_FILE" "$CHANGED_FILE" "$REMOVED_FILE"' EXIT
 while IFS= read -r msg; do
   [[ -z "$msg" ]] && continue
   low=$(printf '%s' "$msg" | tr '[:upper:]' '[:lower:]')
   case "$low" in
-    fix:*|fixed:*|bugfix:*|*fix*|*bug*) FIXED+=("$msg") ;;
-    remove:*|removed:*|delete:*|deleted:*|*remove*|*delete*) REMOVED+=("$msg") ;;
-    add:*|added:*|feat:*|feature:*|*add*|*implement*) ADDED+=("$msg") ;;
-    change:*|changed:*|refactor:*|update:*|updated:*|*change*|*update*|*refactor*) CHANGED+=("$msg") ;;
-    *) CHANGED+=("$msg") ;;
+    fix:*|fixed:*|bugfix:*|*fix*|*bug*) printf '%s\n' "$msg" >> "$FIXED_FILE" ;;
+    remove:*|removed:*|delete:*|deleted:*|*remove*|*delete*) printf '%s\n' "$msg" >> "$REMOVED_FILE" ;;
+    add:*|added:*|feat:*|feature:*|*add*|*implement*) printf '%s\n' "$msg" >> "$ADDED_FILE" ;;
+    change:*|changed:*|refactor:*|update:*|updated:*|*change*|*update*|*refactor*) printf '%s\n' "$msg" >> "$CHANGED_FILE" ;;
+    *) printf '%s\n' "$msg" >> "$CHANGED_FILE" ;;
   esac
 done <<< "$COMMITS"
 
 section() {
   local title=$1
-  local arr_name=$2
-  local -n arr="$arr_name"
+  local file=$2
   printf '### %s\n' "$title"
-  if [[ $(declare -p "$arr_name" 2>/dev/null) == "declare -a $arr_name=()" ]]; then
-    printf -- '- Nothing recorded.\n\n'
-  elif ((${#arr[@]} == 0)); then
+  if [[ ! -s "$file" ]]; then
     printf -- '- Nothing recorded.\n\n'
   else
-    printf '%s\n' "${arr[@]}" | sed 's/^/- /'
+    sed 's/^/- /' "$file"
     printf '\n'
   fi
 }
@@ -45,10 +46,10 @@ section() {
 {
   printf '# Changelog\n\n'
   printf '## %s — generated %s\n\n' "$TODAY" "$SINCE"
-  section Added ADDED
-  section Fixed FIXED
-  section Changed CHANGED
-  section Removed REMOVED
+  section Added "$ADDED_FILE"
+  section Fixed "$FIXED_FILE"
+  section Changed "$CHANGED_FILE"
+  section Removed "$REMOVED_FILE"
 } > "$OUT"
 
 echo "Generated $OUT ($SINCE)"

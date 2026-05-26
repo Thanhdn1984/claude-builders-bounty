@@ -7,3 +7,11 @@
 - feat: initial README with bounty board
 
 ### Fixed
+- Nothing recorded.
+
+### Changed
+- Nothing recorded.
+
+### Removed
+- Nothing recorded.
+
