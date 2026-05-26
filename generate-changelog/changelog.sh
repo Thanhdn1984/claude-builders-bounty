@@ -32,7 +32,9 @@ section() {
   local arr_name=$2
   local -n arr="$arr_name"
   printf '### %s\n' "$title"
-  if ((${#arr[@]} == 0)); then
+  if [[ $(declare -p "$arr_name" 2>/dev/null) == "declare -a $arr_name=()" ]]; then
+    printf -- '- Nothing recorded.\n\n'
+  elif ((${#arr[@]} == 0)); then
     printf -- '- Nothing recorded.\n\n'
   else
     printf '%s\n' "${arr[@]}" | sed 's/^/- /'
